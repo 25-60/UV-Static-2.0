@@ -93,14 +93,11 @@
     </div>
 
     <script>
-        // 1. We completely remove the Service Worker registration block that your school VPN kills.
-
-        // 2. Direct-inject script execution mapping via the remote Wisp gateway connection
         document.getElementById('go-btn').addEventListener('click', () => {
             let query = document.getElementById('url-input').value.trim();
             if (!query) return;
 
-            // Proper clean Google Search parameter assembly 🛠️
+            // 🛠️ Fixed Google Search path construction
             if (!query.includes('.') || query.includes(' ')) {
                 query = 'https://google.com' + encodeURIComponent(query);
             } else if (!query.startsWith('http://') && !query.startsWith('https://')) {
@@ -108,20 +105,25 @@
             }
 
             try {
-                // Generate a direct link signature using Mercury's fallback pipeline format
+                // Ensure the encryption object exists before running it
+                if (!window.__uv$config || !window.__uv$config.encodeUrl) {
+                    throw new Error("Ultraviolet configuration is missing or blocked by filter.");
+                }
+
                 const encoded = window.__uv$config.encodeUrl(query);
                 
-                // Directly utilize the remote unblocked backend domain as the target anchor rather than local paths!
-                const proxyLink = 'https://mercuryworkshop.xyz' + encoded;
+                // Route directly to the backend proxy path instead of local Vercel pages
+                const proxyLink = 'https://mercuryworkshop.xyz' + window.__uv$config.prefix + encoded;
                 
-                console.log("Routing traffic outside local space directly to:", proxyLink);
+                console.log("Navigating to:", proxyLink);
                 document.getElementById('proxy-frame').src = proxyLink;
             } catch (err) {
-                alert("Execution Error: " + err.message);
+                // 🚨 This will tell us exactly what goes wrong instead of doing nothing!
+                alert("Error during execution:\n" + err.message);
             }
         });
 
-        // Keyboard support
+        // Keyboard enter key support
         document.getElementById('url-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') document.getElementById('go-btn').click();
         });
