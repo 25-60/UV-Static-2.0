@@ -7,7 +7,6 @@
     <!-- Core Framework Handler Scripts -->
     <script src="/uv/uv.bundle.js"></script>
     <script>
-        /* 🌟 HARDCODED CONFIGURATION INJECTED DIRECTLY INTO THE HTML TO BYPASS THE SCRIPT BLOCK */
         window.__uv$config = {
             prefix: '/uv/service/',
             wisp: 'wss://wisp.mercuryworkshop.xyz/', 
@@ -94,26 +93,14 @@
     </div>
 
     <script>
-        // 1. Force register safely using our hardcoded object reference
-        window.addEventListener('load', async () => {
-            if ('serviceWorker' in navigator) {
-                try {
-                    await navigator.serviceWorker.register(window.__uv$config.sw, {
-                        scope: window.__uv$config.prefix
-                    });
-                    console.log("Ultraviolet Engine Active.");
-                } catch (err) {
-                    console.error("Engine configuration blocked:", err);
-                }
-            }
-        });
+        // 1. We completely remove the Service Worker registration block that your school VPN kills.
 
-        // 2. Process search queries or regular URLs
+        // 2. Direct-inject script execution mapping via the remote Wisp gateway connection
         document.getElementById('go-btn').addEventListener('click', () => {
             let query = document.getElementById('url-input').value.trim();
             if (!query) return;
 
-            // Clean fallback to a standard Google search path
+            // Proper clean Google Search parameter assembly 🛠️
             if (!query.includes('.') || query.includes(' ')) {
                 query = 'https://google.com' + encodeURIComponent(query);
             } else if (!query.startsWith('http://') && !query.startsWith('https://')) {
@@ -121,11 +108,13 @@
             }
 
             try {
-                const origin = window.location.origin;
-                const prefix = window.__uv$config.prefix;
+                // Generate a direct link signature using Mercury's fallback pipeline format
                 const encoded = window.__uv$config.encodeUrl(query);
                 
-                const proxyLink = origin + prefix + encoded;
+                // Directly utilize the remote unblocked backend domain as the target anchor rather than local paths!
+                const proxyLink = 'https://mercuryworkshop.xyz' + encoded;
+                
+                console.log("Routing traffic outside local space directly to:", proxyLink);
                 document.getElementById('proxy-frame').src = proxyLink;
             } catch (err) {
                 alert("Execution Error: " + err.message);
