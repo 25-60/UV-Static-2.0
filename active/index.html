@@ -4,9 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Web Proxy</title>
-    <!-- Core Ultraviolet Framework Scripts -->
+    <!-- Core Framework Handler Scripts -->
     <script src="/uv/uv.bundle.js"></script>
-    <script src="/uv/uv.config.js"></script>
+    <script>
+        /* 🌟 HARDCODED CONFIGURATION INJECTED DIRECTLY INTO THE HTML TO BYPASS THE SCRIPT BLOCK */
+        window.__uv$config = {
+            prefix: '/uv/service/',
+            wisp: 'wss://wisp.mercuryworkshop.xyz/', 
+            encodeUrl: function(str) {
+                if (!str) return str;
+                return encodeURIComponent(str.split('').map((char, i) => i % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
+            },
+            decodeUrl: function(str) {
+                if (!str) return str;
+                return decodeURIComponent(str).split('').map((char, i) => i % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join('');
+            },
+            handler: '/uv/uv.handler.js',
+            client: '/uv/uv.client.js',
+            bundle: '/uv/uv.bundle.js',
+            config: '/uv/uv.config.js',
+            sw: '/uv/uv.sw.js',
+        };
+    </script>
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -75,19 +94,17 @@
     </div>
 
     <script>
-        // 1. Force register Ultraviolet's Service Worker safely
+        // 1. Force register safely using our hardcoded object reference
         window.addEventListener('load', async () => {
             if ('serviceWorker' in navigator) {
                 try {
-                    await navigator.serviceWorker.register(__uv$config.sw, {
-                        scope: __uv$config.prefix
+                    await navigator.serviceWorker.register(window.__uv$config.sw, {
+                        scope: window.__uv$config.prefix
                     });
                     console.log("Ultraviolet Engine Active.");
                 } catch (err) {
-                    console.error("Engine failed to initialize:", err);
+                    console.error("Engine configuration blocked:", err);
                 }
-            } else {
-                console.error("Service workers are not supported by this browser/network context.");
             }
         });
 
@@ -96,7 +113,7 @@
             let query = document.getElementById('url-input').value.trim();
             if (!query) return;
 
-            // Fixed search string query constructor 🛠️
+            // Clean fallback to a standard Google search path
             if (!query.includes('.') || query.includes(' ')) {
                 query = 'https://google.com' + encodeURIComponent(query);
             } else if (!query.startsWith('http://') && !query.startsWith('https://')) {
@@ -104,20 +121,18 @@
             }
 
             try {
-                // Ensure proper path structures with fallback root references
                 const origin = window.location.origin;
-                const prefix = __uv$config.prefix;
-                const encoded = __uv$config.encodeUrl(query);
+                const prefix = window.__uv$config.prefix;
+                const encoded = window.__uv$config.encodeUrl(query);
                 
                 const proxyLink = origin + prefix + encoded;
-                console.log("Navigating to proxy target:", proxyLink);
                 document.getElementById('proxy-frame').src = proxyLink;
             } catch (err) {
-                alert("Encoding Error: " + err.message + "\nMake sure your uv.config.js is saved correctly.");
+                alert("Execution Error: " + err.message);
             }
         });
 
-        // Allow pressing 'Enter' on iPad keyboard to search
+        // Keyboard support
         document.getElementById('url-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') document.getElementById('go-btn').click();
         });
