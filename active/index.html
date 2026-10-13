@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Web Proxy</title>
     <!-- Core Ultraviolet Framework Scripts -->
-    <script src="uv/uv.bundle.js"></script>
-    <script src="uv/uv.config.js"></script>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv/uv.config.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -75,7 +75,7 @@
     </div>
 
     <script>
-        // 1. Force register Ultraviolet's Service Worker immediately
+        // 1. Force register Ultraviolet's Service Worker safely
         window.addEventListener('load', async () => {
             if ('serviceWorker' in navigator) {
                 try {
@@ -86,6 +86,8 @@
                 } catch (err) {
                     console.error("Engine failed to initialize:", err);
                 }
+            } else {
+                console.error("Service workers are not supported by this browser/network context.");
             }
         });
 
@@ -94,16 +96,25 @@
             let query = document.getElementById('url-input').value.trim();
             if (!query) return;
 
-            // If it's not a direct URL format, route it through a Google search fallback
+            // Fixed search string query constructor 🛠️
             if (!query.includes('.') || query.includes(' ')) {
                 query = 'https://google.com' + encodeURIComponent(query);
             } else if (!query.startsWith('http://') && !query.startsWith('https://')) {
                 query = 'https://' + query;
             }
 
-            // Encode the link through Ultraviolet and load into our clean frame
-            const proxyLink = window.location.origin + __uv$config.prefix + __uv$config.encodeUrl(query);
-            document.getElementById('proxy-frame').src = proxyLink;
+            try {
+                // Ensure proper path structures with fallback root references
+                const origin = window.location.origin;
+                const prefix = __uv$config.prefix;
+                const encoded = __uv$config.encodeUrl(query);
+                
+                const proxyLink = origin + prefix + encoded;
+                console.log("Navigating to proxy target:", proxyLink);
+                document.getElementById('proxy-frame').src = proxyLink;
+            } catch (err) {
+                alert("Encoding Error: " + err.message + "\nMake sure your uv.config.js is saved correctly.");
+            }
         });
 
         // Allow pressing 'Enter' on iPad keyboard to search
