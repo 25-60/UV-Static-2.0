@@ -97,28 +97,26 @@
             let query = document.getElementById('url-input').value.trim();
             if (!query) return;
 
-            // 🛠️ Fixed Google Search path construction
+            // Proper URL construction for search engine vs direct URL
             if (!query.includes('.') || query.includes(' ')) {
-                query = 'https://google.com' + encodeURIComponent(query);
+                query = 'https://www.google.com/search?q=' + encodeURIComponent(query);
             } else if (!query.startsWith('http://') && !query.startsWith('https://')) {
                 query = 'https://' + query;
             }
 
             try {
-                // Ensure the encryption object exists before running it
                 if (!window.__uv$config || !window.__uv$config.encodeUrl) {
-                    throw new Error("Ultraviolet configuration is missing or blocked by filter.");
+                    throw new Error("Ultraviolet configuration is missing or blocked.");
                 }
 
                 const encoded = window.__uv$config.encodeUrl(query);
                 
-                // Route directly to the backend proxy path instead of local Vercel pages
-                const proxyLink = 'https://mercuryworkshop.xyz' + window.__uv$config.prefix + encoded;
+                // Construct the local proxy path using the configured prefix
+                const proxyLink = window.__uv$config.prefix + encoded;
                 
                 console.log("Navigating to:", proxyLink);
                 document.getElementById('proxy-frame').src = proxyLink;
             } catch (err) {
-                // 🚨 This will tell us exactly what goes wrong instead of doing nothing!
                 alert("Error during execution:\n" + err.message);
             }
         });
